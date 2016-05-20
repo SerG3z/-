@@ -1,0 +1,3 @@
+life - последовательная версия
+life2_2 - MPI 
+mpicc -o "name" life2_2.c -std=c99 
