@@ -1,7 +1,7 @@
 ##Project structure:
 
 
-/DSA/[number]\_[programm name]/
+/PCT/[number]\_[programm name]/
 
 /programming/[number]\_[programm name]/
 
