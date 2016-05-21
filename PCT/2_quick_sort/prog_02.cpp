@@ -1,3 +1,6 @@
+/*
+ * Quick Sort OpenMP
+ */
 #include <iostream>
 #include <fstream>
 
@@ -7,8 +10,7 @@
 
 #include <omp.h>
 
-
-int N = 10;
+int N = 10;         // Massive size
 
 
 void partition (int *mas, int *left, int *right)
