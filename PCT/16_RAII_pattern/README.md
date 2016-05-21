@@ -1,4 +1,4 @@
-cmake сборка:
+##cmake
 
 mkdir build
 cd build/
@@ -6,6 +6,6 @@ cmake ..
 make
 ./16_RAII_pattern
 
-или 
+##or
 
 bash build.sh
