@@ -16,4 +16,4 @@
 
 ##Google docs:
 
-[Общая папка](./.gitignore "Кладем ответы на теорию и помечаем сделанные проги")
+[Общая папка](https://drive.google.com/folderview?id=0B-AVje1F5aQibzBwZGdQR2ZfOEE&usp=sharing#list "Кладем ответы на теорию и помечаем сделанные проги")
