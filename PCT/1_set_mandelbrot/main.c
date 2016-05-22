@@ -19,6 +19,8 @@ struct threadArguments {
     double x1, y1, x2, y2;
 };
 
+double X1 = -2 , X2 = 1, Y1 = 1, Y2 =-1;
+
 double wtime()
 {
     struct timeval t;
@@ -92,11 +94,11 @@ double calculate(int threadCount) {
         }
 
         args = malloc(sizeof(struct threadArguments));
-        args->x1 = -2.0;
-        args->y1 = 1.0;
+        args->x1 = X1;
+        args->y1 = Y1;
 
-        args->x2 = 1.0;
-        args->y2 = -1.0;
+        args->x2 = X2;
+        args->y2 = Y2;
 
         args->startline = startline;
         args->endline = endline;
@@ -130,8 +132,15 @@ int main(int argc, char **argv)
     double oneThreadTime = averageTime;
 
     if (argc != 1) {
-       printf("Usage:\n %s <x1> <y1> <x2> <y2> floats\n", argv[0]);
-       return 0;
+        if (argc != 5) {
+            printf("Usage:\n %s <x1> <y1> <x2> <y2> floats\n(X1, Y1) - top left point of rectangle\n(X2, Y2) - bottom right point", argv[0]);
+            return 0;
+        }
+        X1 = strtof(argv[1], NULL);
+        Y1 = strtof(argv[2], NULL);
+        X2 = strtof(argv[3], NULL);
+        Y2 = strtof(argv[4], NULL);
+        printf("%f %f %f %f\n", X1, Y1, X2, Y2);
     }
 
     printf("Repeat counts is %d\n", REPEAT_COUNT);
