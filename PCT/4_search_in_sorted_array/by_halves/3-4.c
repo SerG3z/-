@@ -4,8 +4,8 @@
 #include <pthread.h>
 #include <time.h>
 
-//#define BUF_SIZE (long)1e7
-#define BUF_SIZE 99
+#define BUF_SIZE	(long)1e3
+#define MAGIC_SIZE	(long)1e3
 #define NTHR 	 3
 
 struct Block {
@@ -13,6 +13,7 @@ struct Block {
 	long *mas;	// subarray
 	long idx;	// thread position in subarray
 	long value;	// X
+	long globalPos;
 	long pos;	// thread position in array
 	long start;	// subarray start
 	long end;	// subarray end
@@ -23,6 +24,7 @@ struct Block {
 };
 
 short isFound = 0;
+long indeces[MAGIC_SIZE];
 
 // for sorting shit
 int cmp(const void *a, const void *b)
@@ -41,7 +43,7 @@ void *thread_func(void *p)
 	long i;
 
 	printf("Thread #%ld stay on %ld(%ld).\n", b->id, b->pos, b->mas[b->idx]);
-	printf("Thread idx: %ld\n", b->idx);
+	printf("Thread globalPos: %ld\n", b->globalPos);
 
 	if (b->mas[b->idx] < b->value)
 		b->flag = 1;
@@ -50,7 +52,7 @@ void *thread_func(void *p)
 	else {
 		b->flag = 0;
 		printf("Thread #%ld found '%ld' at pos: %ld\n",
-			b->id, b->value, b->pos + 1);
+			b->id, b->value, b->globalPos + 1);
 		isFound = 1;
 	}
 	printf("\twith flag: %d\n", b->flag);
@@ -66,7 +68,7 @@ int main(int argc, char **argv)
 	long *buf = (long *) malloc(sizeof(long) * BUF_SIZE);
 
 	for (i = 0; i < BUF_SIZE; ++i)
-		buf[i] = (long)(100 + rand() % 1337);
+		buf[i] = (long)(100 + rand() % MAGIC_SIZE);
 
 	qsort(buf, BUF_SIZE, sizeof(long), cmp);
 
@@ -79,6 +81,9 @@ int main(int argc, char **argv)
 	}
 	printf("\n");
 
+	for (i = 0; i < BUF_SIZE; ++i)
+		indeces[buf[i]] = i;
+
 	printf("Input x: ");
 	scanf("%ld", &x);
 
@@ -86,6 +91,7 @@ int main(int argc, char **argv)
 	pthread_t *threads = (pthread_t *) malloc(sizeof(pthread_t) * NTHR);
 
 	long N = BUF_SIZE / (NTHR);		// number of elements in subarray
+	long M = BUF_SIZE % N;
 
 	long left_border = 0;			// this shit need to us when we choose
 									// what subarray lookup next
@@ -107,16 +113,17 @@ int main(int argc, char **argv)
 
 			if (i == NTHR - 1) {
 				// if its last - we need to allocate more than N elements (N + BUF_SIZE % N)
-				if ((BUF_SIZE % N)) {
-					a = (long *) malloc(sizeof(long) * (BUF_SIZE % N + N));
+				if (M) {
+					a = (long *) malloc(sizeof(long) * (M + N));
 
-					for (j = 0; j < (BUF_SIZE % N) + N; ++j)
+					for (j = 0; j < M + N; ++j)
 						a[j] = buf[i * N + j + left_border];
 
-					b[i].pos = i * N + N - 1 + (BUF_SIZE % N);
+					b[i].pos = i * N + N - 1 + M;
 					printf("b[%ld].pos: %ld\n", i, b[i].pos);
+					b[i].globalPos = indeces[a[M + N - 1]];
 					b[i].mas = a;
-					b[i].end = BUF_SIZE % N + N;
+					b[i].end = M + N;
 				} else {
 					// that`s just for case when BUF_SIZE % N == 0 (allocate like it`s normal shit)
 					a = (long *) malloc(sizeof(long) * N);
@@ -126,6 +133,7 @@ int main(int argc, char **argv)
 
 					b[i].pos = i * N + N - 1;
 					printf("b[%ld].pos: %ld\n", i, b[i].pos);
+					b[i].globalPos = indeces[a[N - 1]];
 					b[i].mas = a;
 					b[i].end = N;
 				}
@@ -138,6 +146,7 @@ int main(int argc, char **argv)
 
 				b[i].pos = i * N + N - 1;
 				printf("b[%ld].pos: %ld\n", i, b[i].pos);
+				b[i].globalPos = indeces[a[N - 1]];
 				b[i].mas = a;
 				b[i].end = N;
 			}
@@ -168,12 +177,14 @@ int main(int argc, char **argv)
 		// we can`t do more partitioning shit then so just break
 		if (N == 1) break;
 
+		left_border = 0;
 		for (i = 0; i < NTHR; ++i) {
 			// we need to find subarray in which our element might be
 			// so for do that we need to find THE MOTHERFUCKING RIGHTMOST BORDER
 			// so we just start our partitioning from it
-			if (b[i].flag == -1 && b[i].pos > left_border) {
-				left_border = b[i].pos + 1;
+			printf("\n\nleft_border: %ld\n\n", left_border);
+			if (b[i].flag == 1 && b[i].pos > left_border) {
+				left_border = b[i].globalPos + 1;
 			}
 			else if (!b[i].flag) {
 				printf("Elapsed time: %f\n", ((float)(clock() - timer)) / CLOCKS_PER_SEC);
@@ -181,6 +192,7 @@ int main(int argc, char **argv)
 			}
 			else continue;
 		}
+		if (!left_border) left_border = b[0].globalPos - N + 1;
 
 		// just because we starts from huge array
 		// and then we need to reduce our range of subarrays
