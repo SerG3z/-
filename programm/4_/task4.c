@@ -9,6 +9,11 @@
 #include <string.h>
 #include <strings.h>
 
+// rome was a greate city
+// 1 divide by space
+// 2 compare words
+// 3 find max words
+
 typedef struct
 {
 	int len;
@@ -17,58 +22,95 @@ typedef struct
 
 max_same maxString;
 
-void fun(char *key, char *string)
+int str_size(char *string)
 {
-	char result[256];
-	bzero(result, 256);
+	int i = 0;
 
-	char *ptr = strstr(string, key);
-	
-	if (ptr == NULL) {
-		return;
+	while (string[i] != '\0') {
+		i++;
 	}
-
-	for (int i = 0; i < strlen(key); i++) {
-		result[i] = *ptr;
-		ptr++;
-	}
-
-	if (strlen(key) > maxString.len) {
-		maxString.len = strlen(key);
-		strcpy(maxString.string, result);		
-	}
+	//printf("%d\n", i);
+	return i;
 }
 
-char *find_same(char *str)
+int compare_stings(char *string, char *key, char *tmp)
 {
-	int len = strlen(str);
-	char tmp[len/2];
+	int i = 0;
 	int j = 0;
 
-	for (int i = 0; i < (len/2); i++) {
-		int cnt = i + 1;
-		if (str[i] == ' ') {
-			bzero(tmp, (len/2));
-			j = 0;
-			continue;
-		} else {
-			tmp[j] = str[i];
-			
-			char comapre[256];
-			
-			for (int k = 0; k < strlen(str) - i; k++) {
-				comapre[k] = str[cnt];
-				cnt++;
+	while (string[i] != '\0')
+	{
+		if (string[i] != key[j]) {
+			if (j == 0) { // key[] -> first letter
+				i++; // no match
+			} else if (key[j] == '\0') { // key[] - end of word
+				tmp[j] = '\0';
+				return 0;
+			} else {
+				tmp[j] = '\0';
+				return 0;
 			}
-			fun(tmp, comapre);
-
+		} else {
+			tmp[j] = key[j];
+			i++;
 			j++;
 		}
 	}
-
-
-	return NULL;
+	tmp[j] = '\0';
+	return 0;
 }
+
+void find_max_same(char str[256][256], int size)
+{
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			if (i != j) {
+				//printf("%s | %s\n",str[i], str[j]);
+				char tmp[256];
+				bzero(tmp, 256);
+				
+				compare_stings(str[i], str[j], &tmp);
+				
+				if (str_size(tmp) > 1) {
+					if (str_size(tmp) > maxString.len) {
+						maxString.len = str_size(tmp);
+						strcpy(maxString.string, tmp);		
+					}
+					//printf("%s\n", tmp);
+				}
+			}
+
+		}
+	}
+}
+
+void divide(char *str)
+{
+	char words[256][256]; // list of strings
+	int i = 0;
+	int j = 0;
+	int cnt = 0;
+
+	while (str[i] != '\0') {
+		if (str[i] == ' ') {
+			words[j][cnt+1] = '\0';
+			j++;
+			cnt = 0;
+		} else {
+			words[j][cnt] = str[i];
+			cnt++;
+		}
+		i++;
+	}
+	words[j][cnt+1] = '\0';
+	j++;
+
+	find_max_same(words, j);
+	
+	printf("lenght = %d\n", maxString.len);
+	printf("string = %s\n", maxString.string);
+}
+
 
 int main(int argc, char const *argv[])
 {
@@ -80,11 +122,7 @@ int main(int argc, char const *argv[])
 	printf("Input test string: ");
 	fgets(string, 256, stdin);
 
-	char *ptr;
+	divide(string);
 
-	ptr = find_same(string);
-
-	printf("lenght = %d\n", maxString.len);
-	printf("string = %s\n", maxString.string);
 	return 0;
 }
