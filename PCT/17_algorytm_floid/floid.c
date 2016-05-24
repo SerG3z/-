@@ -12,6 +12,7 @@
 #include <string.h> 
 #include <mpi.h>
 #include <sys/time.h>
+#include "hpctimer.h"
 
 #define INF 99 // Отсутствие связи между вершинами
 
@@ -58,7 +59,8 @@ int main(int argc, char* argv[]) {
 	if (my_rank == 0)
 	{
 		printf("\n");
-		time = wtime();
+		// time = wtime();
+		time = hpctimer_getwtime();
 	}
 
 	Floyd(local_mat, n, my_rank, p, comm);
@@ -66,7 +68,10 @@ int main(int argc, char* argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if (my_rank == 0) {
-		printf("time = %.4f \n", wtime() - time);
+		// printf("time = %.4f \n", wtime() - time);
+
+		printf("time = %.4f \n", hpctimer_getwtime() - time);
+
 		printf("Completed!!!!!\n");
 		printf("The solution is:\n");
 	}
