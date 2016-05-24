@@ -71,7 +71,6 @@ int main(int argc, char *argv[])
 
 	for (i = src; i < dest; ++i) {
 		for (j = 0; j < SIZE; ++j) {
-//			c[i][j] = 0;
 			for (k = 0; k < SIZE; ++k)
 				c[i][j] += a[i][k] * b[k][j];
 		}
